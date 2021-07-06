@@ -74,7 +74,14 @@ function onScriptingButtonUp(index, colour)
         local count = {}
         for i = 1, #objs do
           local obj = objs[i]
-          if (obj.type == "Deck" or obj.type == "Card") then
+          if obj.type == "Deck" then
+            for _, v in pairs(obj.getObjects()) do
+              if v.name ~= "Card" then
+                count[v.name] = (count[v.name] or 0) + 1
+              end
+            end
+          end
+          if obj.type == "Card" then
             if obj.getName() ~= "" and obj.getName() ~= nil then
               count[obj.getName()] = (count[obj.getName()] or 0) + 1
             end

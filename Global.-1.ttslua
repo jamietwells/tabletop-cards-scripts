@@ -66,7 +66,6 @@ function onScriptingButtonUp(index, colour)
                     function toRunFunc()
                       if obj ~= nil and handObj ~= nil then
                         obj.setPosition(handObj.getPosition())
-                        Wait.time(toRunFunc, 1, 10)
                       end
                     end
 

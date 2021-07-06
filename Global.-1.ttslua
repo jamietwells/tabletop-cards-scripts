@@ -53,27 +53,19 @@ function onScriptingButtonUp(index, colour)
         end
         local objs = getAllObjects()
 
-        function groupCardsSmooth(objs, isInHand)
+        function groupCards(objs)
           for i = 1, #objs do
             local obj = objs[i]
             if (obj.type == "Deck" or obj.type == "Card") then
               if obj.is_face_down ~= handObj.is_face_down then
                 obj.flip()
               end
-              if isInHand then
-                obj.setPosition(handObj.getPosition())
-              else
-                obj.setPositionSmooth(handObj.getPosition())
-              end
-              obj.setRotationSmooth(handObj.getRotation())
+              obj.setPosition(handObj.getPosition())
+              obj.setRotation(handObj.getRotation())
             end
           end
         end
-        groupCardsSmooth(getAllObjects(), false)
-        local colours = getSeatedPlayers()
-        for i = 1, #colours do
-          groupCardsSmooth(Player[colours[i]].getHandObjects(1), true)
-        end
+        groupCards(getAllObjects())
     end
     if index == 3 then
 

@@ -67,7 +67,7 @@ function onScriptingButtonUp(index, colour)
         end
         groupCards(getAllObjects())
     end
-    if index == 7 or index == 8 then
+    if index == 7 then
         local objs = getAllObjects()
 
         local count = {}

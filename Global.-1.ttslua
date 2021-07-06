@@ -45,7 +45,7 @@ function onScriptingButtonUp(index, colour)
 
         bubbleSortInPlace(handObjects, predicate, swapCard)
     end
-    if index == 2 then
+    if index == 9 then
         local handObj = currentPlayer.getHoverObject()
         if handObj == nil or (handObj.type ~= "Deck" and handObj.type ~= "Card") then
             print("Player " .. currentPlayer.steam_name .. " is not hovering over a deck")
@@ -67,7 +67,7 @@ function onScriptingButtonUp(index, colour)
         end
         groupCards(getAllObjects())
     end
-    if index == 3 then
+    if index == 7 then
 
         local objs = getAllObjects()
 

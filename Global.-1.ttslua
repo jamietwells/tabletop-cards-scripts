@@ -1,0 +1,137 @@
+--[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
+--[[ The onLoad event is called after the game save finishes loading. --]]
+function onLoad()
+    lookup = (function()
+        local lookup = {}
+
+        local suit = {"C", "D", "S", "H"}
+        local number = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
+        for suitIndex = 1, #suit do
+            for numberIndex = 1, #number do
+                lookup[number[numberIndex] .. suit[suitIndex]] = ((suitIndex - 1) * #number + numberIndex)
+            end
+        end
+
+        return lookup
+    end)()
+end
+
+--[[ The onUpdate event is called once per frame. --]]
+function onUpdate()
+    --[[ print('onUpdate loop!')
+
+    --]]
+end
+
+function onScriptingButtonUp(index, colour)
+  local currentPlayer = Player[colour]
+    if index == 1 then
+        local handObjects = currentPlayer.getHandObjects(1)
+
+        function predicate(a, b)
+            if a.type ~= "Card" then
+                return false
+            end
+            if b.type ~= "Card" then
+                return true
+            end
+            return (lookup[a.getName()] or 1) > (lookup[b.getName()] or 1)
+        end
+        function swapCard(a, b)
+            local temp = b.getPosition()
+            b.setPosition(a.getPosition())
+            a.setPosition(temp)
+        end
+
+        bubbleSortInPlace(handObjects, predicate, swapCard)
+    end
+    if index == 2 then
+        local handObj = currentPlayer.getHoverObject()
+        if handObj == nil or (handObj.type ~= "Deck" and handObj.type ~= "Card") then
+            print("Player " .. currentPlayer.steam_name .. " is not hovering over a deck")
+            return
+        end
+        local objs = getAllObjects()
+
+        function groupCardsSmooth(objs, isInHand)
+          for i = 1, #objs do
+            local obj = objs[i]
+            if (obj.type == "Deck" or obj.type == "Card") then
+              if obj.is_face_down ~= handObj.is_face_down then
+                obj.flip()
+              end
+              if isInHand then
+                obj.setPosition(handObj.getPosition())
+              else
+                obj.setPositionSmooth(handObj.getPosition())
+              end
+              obj.setRotationSmooth(handObj.getRotation())
+            end
+          end
+        end
+        groupCardsSmooth(getAllObjects(), false)
+        local colours = getSeatedPlayers()
+        for i = 1, #colours do
+          groupCardsSmooth(Player[colours[i]].getHandObjects(1), true)
+        end
+    end
+    if index == 3 then
+
+        local objs = getAllObjects()
+
+        local count = {}
+        for i = 1, #objs do
+          local obj = objs[i]
+          if (obj.type == "Deck" or obj.type == "Card") then
+            if obj.getName() ~= "" and obj.getName() ~= nil then
+              count[obj.getName()] = (count[obj.getName()] or 0) + 1
+            end
+          end
+        end
+
+        local found = false
+        for k, v in pairs(count) do
+          if v > 1 then
+            print("Card " .. k .. " is duplicated")
+            found = true
+          end
+        end
+        if found == false then
+          print("No duplicates found")
+        end
+    end
+end
+
+function bubbleSortInPlace(arr, predicate, onSwap)
+    if #arr < 2 then
+        return
+    end
+    for _ = 1, #arr do
+        for i = 1, #arr - 1 do
+            if (predicate(arr[i], arr[i + 1])) then
+                local temp = arr[i + 1]
+                arr[i + 1] = arr[i]
+                arr[i] = temp
+                onSwap(arr[i], arr[i + 1])
+            end
+        end
+    end
+end
+
+function printObject(table)
+  function dump(o)
+      if type(o) == "table" then
+          local s = "{ "
+          for k, v in pairs(o) do
+              if type(k) ~= "number" then
+                  k = '"' .. k .. '"'
+              end
+              s = s .. "[" .. k .. "] = " .. dump(v) .. ","
+          end
+          return s .. "} "
+      else
+          return tostring(o)
+      end
+  end
+  print(dump(table))
+end

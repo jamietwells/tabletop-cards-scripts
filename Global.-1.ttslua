@@ -72,27 +72,54 @@ function onScriptingButtonUp(index, colour)
         local objs = getAllObjects()
 
         local count = {}
+        local glow = {}
         for i = 1, #objs do
           local obj = objs[i]
           if obj.type == "Deck" then
             for _, v in pairs(obj.getObjects()) do
               if v.name ~= "Card" then
                 count[v.name] = (count[v.name] or 0) + 1
+
+                glow[v.name] = glow[v.name] or { }
+                glow[v.name][#glow[v.name] + 1] = function (callback)
+                  obj.takeObject({
+                    guid = v.guid,
+                    callback_function = function (card)
+                      card.deal(1, colour)
+                      card.highlightOn({ r = 1, g = 0, b = 0 },  10)
+                      callback()
+                    end
+                  })
+                end
               end
             end
           end
           if obj.type == "Card" then
             if obj.getName() ~= "" and obj.getName() ~= nil then
               count[obj.getName()] = (count[obj.getName()] or 0) + 1
+
+              glow[obj.getName()] = glow[obj.getName()] or { }
+              glow[obj.getName()][#glow[obj.getName()] + 1] = function (callback)
+                obj.deal(1, colour)
+                obj.highlightOn({ r = 1, g = 0, b = 0 },  10)
+                callback()
+              end
             end
           end
         end
 
+        function runGlowAsync(fArr, index)
+          if #fArr < index then
+            return
+          end
+          fArr[index](function () runGlowAsync(fArr, index + 1) end)
+        end
         local found = false
         for k, v in pairs(count) do
           if v > 1 then
             print("Card " .. k .. " is duplicated")
             found = true
+            runGlowAsync(glow[k], 1)
           end
         end
         if found == false then

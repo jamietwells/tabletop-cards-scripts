@@ -77,33 +77,35 @@ function onScriptingButtonUp(index, colour)
             if obj.type == "Deck" then
                 for _, v in pairs(obj.getObjects()) do
                     if v.name ~= "Card" then
-                        count[v.name] = (count[v.name] or 0) + 1
-
-                        glow[v.name] = glow[v.name] or {}
-                        glow[v.name][#glow[v.name] + 1] = function(callback)
-                            obj.takeObject(
-                                {
-                                    guid = v.guid,
-                                    callback_function = function(card)
-                                        card.deal(1, colour)
-                                        card.highlightOn({r = 1, g = 0, b = 0}, 10)
-                                        callback()
-                                    end
-                                }
-                            )
+                        local next = (count[v.name] or 0) + 1
+                        count[v.name] = next
+                        if next > 1 then
+                            glow[#glow + 1] = function(callback)
+                                obj.takeObject(
+                                    {
+                                        guid = v.guid,
+                                        callback_function = function(card)
+                                            card.deal(1, colour)
+                                            card.highlightOn({r = 1, g = 0, b = 0}, 10)
+                                            callback()
+                                        end
+                                    }
+                                )
+                            end
                         end
                     end
                 end
             end
             if obj.type == "Card" then
                 if obj.getName() ~= "" and obj.getName() ~= nil then
-                    count[obj.getName()] = (count[obj.getName()] or 0) + 1
-
-                    glow[obj.getName()] = glow[obj.getName()] or {}
-                    glow[obj.getName()][#glow[obj.getName()] + 1] = function(callback)
-                        obj.deal(1, colour)
-                        obj.highlightOn({r = 1, g = 0, b = 0}, 10)
-                        callback()
+                    local next = (count[obj.getName()] or 0) + 1
+                    count[obj.getName()] = next
+                    if next > 1 then
+                        glow[#glow + 1] = function(callback)
+                            obj.deal(1, colour)
+                            obj.highlightOn({r = 1, g = 0, b = 0}, 10)
+                            callback()
+                        end
                     end
                 end
             end
@@ -120,15 +122,14 @@ function onScriptingButtonUp(index, colour)
             )
         end
         local found = false
+
         for k, v in pairs(count) do
             if v > 1 then
                 print("Card " .. k .. " is duplicated")
                 found = true
-                if index == 8 then
-                    runGlowAsync(glow[k], 1)
-                end
             end
         end
+        runGlowAsync(glow, 1)
         if found == false then
             print("No duplicates found")
         end
